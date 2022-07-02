@@ -6,9 +6,7 @@ import traceback
 import datetime
 import sys
 
-with open('repa_scheduler_api_key') as f:
-    API_KEY = f.read().strip()
-
+API_KEY = sys.argv[1]
 API_PREFIX = 'https://api.telegram.org/bot' + API_KEY + '/'
 
 guides_group = -1001786539369
@@ -16,11 +14,10 @@ hosts_group = -1001658680990
 test_group = -795223636
 oncall = 174125991
 
-'''
-r = requests.get(API_PREFIX + 'getUpdates')
-print(json.dumps(r.json()))
-sys.exit(0)
-'''
+if len(sys.argv) > 2 and sys.argv[2] == 'get':
+  r = requests.get(API_PREFIX + 'getUpdates')
+  print(json.dumps(r.json()))
+  sys.exit(0)
 
 weekdays = {
  0: 'Mon',
