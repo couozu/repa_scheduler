@@ -1,10 +1,13 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 
 import requests
 import json
 import traceback
 import datetime
 import sys
+import math
+import decimal
+dec = decimal.Decimal
 
 API_KEY = sys.argv[1]
 API_PREFIX = 'https://api.telegram.org/bot' + API_KEY + '/'
@@ -34,11 +37,36 @@ day = datetime.datetime.utcnow()
 while weekdays[day.weekday()] != 'Sun':
   day = day + datetime.timedelta(days=1)
 
+def position(now=None): 
+   if now is None: 
+      now = datetime.datetime.now()
+
+   diff = now - datetime.datetime(2001, 1, 1)
+   days = dec(diff.days) + (dec(diff.seconds) / dec(86400))
+   lunations = dec("0.20439731") + (days * dec("0.03386319269"))
+
+   return lunations % dec(1)
+
+def phase(pos): 
+   index = (pos * dec(29))
+   index = math.floor(index)
+
+   dates = {
+      0: "New Moon", 
+      5: "6th", 
+      13: "Full Moon",
+      19: "20st" 
+   }
+   return dates.get(int(index) & 31, '')
+
 options = []
 
 for _ in range(7):
   day = day + datetime.timedelta(days=1)
-  options.append(day.strftime('%A %d/%b')) 
+  options.append(
+    day.strftime('%A %d/%b') + 
+    ' ' + 
+    phase(position(day))) 
 
 options.append('Show results')
 
@@ -53,7 +81,6 @@ def sendWeeklyPoll(group, question):
   r.raise_for_status()
 
 try:
-  sendWeeklyPoll(hosts_group, 'Planning next week! Please choose dates you can host!')
   sendWeeklyPoll(guides_group, 'Planning next week! Please choose the dates you can guide!')
   res = 'Success!'
 except:
